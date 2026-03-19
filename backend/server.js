@@ -19,6 +19,12 @@ app.use(
   })
 );
 
+// Health check / landing route for deployment platforms
+// (prevents "Cannot GET /" when opening the service root)
+app.get("/", (_req, res) => {
+  res.status(200).send("AI Resume Analyzer API is running");
+});
+
 const upload = multer({ dest: "uploads/" });
 
 const USERS_FILE = path.join(__dirname, "data", "users.json");
