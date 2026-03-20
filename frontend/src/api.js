@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:5000";
+// When deployed with backend+frontend on the same domain, API calls should be relative.
+// If your frontend is hosted separately, set `VITE_API_BASE` during the frontend build.
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export function getToken() {
   return localStorage.getItem("token");

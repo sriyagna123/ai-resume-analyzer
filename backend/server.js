@@ -19,11 +19,11 @@ app.use(
   })
 );
 
-// Health check / landing route for deployment platforms
-// (prevents "Cannot GET /" when opening the service root)
-app.get("/", (_req, res) => {
-  res.status(200).send("AI Resume Analyzer API is running");
-});
+// Serve the React build if it exists (so the same Render service can show the UI).
+const frontendDist = path.join(__dirname, "..", "frontend", "dist");
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+}
 
 const upload = multer({ dest: "uploads/" });
 
@@ -351,6 +351,27 @@ app.post("/analyze", requireAuth, upload.single("resume"), async (req, res) => {
     }
   }
 });
+
+// Health endpoint (useful for uptime checks)
+app.get("/health", (_req, res) => {
+  res.status(200).send("OK");
+});
+
+// If the React build exists, use it as the app frontend (SPA fallback).
+// Otherwise, keep a simple API landing page.
+if (fs.existsSync(frontendDist)) {
+  app.get("/", (_req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+} else {
+  app.get("/", (_req, res) => {
+    res.status(200).send("AI Resume Analyzer API is running");
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
